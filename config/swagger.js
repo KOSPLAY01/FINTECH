@@ -11,7 +11,7 @@ const options = {
     },
     servers: [
       {
-        url: 'http://localhost:3000',
+        url: 'https://fintech-dun.vercel.app/' || 'http://localhost:3000',
       },
     ],
     components: {
