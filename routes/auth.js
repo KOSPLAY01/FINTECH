@@ -255,7 +255,7 @@ router.put('/auth/profile', authenticateToken, upload.single('image'), updatePro
  * @swagger
  * /auth/forgot-password:
  *   post:
- *     summary: Request password reset
+ *     summary: Request password reset code
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -271,7 +271,7 @@ router.put('/auth/profile', authenticateToken, upload.single('image'), updatePro
  *                 example: johndoe@email.com
  *     responses:
  *       200:
- *         description: Password reset email sent
+ *         description: Password reset code sent
  *         content:
  *           application/json:
  *             schema:
@@ -279,7 +279,7 @@ router.put('/auth/profile', authenticateToken, upload.single('image'), updatePro
  *               properties:
  *                 message:
  *                   type: string
- *                   example: Password reset email sent
+ *                   example: Reset code sent if the account exists.
  *       400:
  *         description: Bad request
  *         content:
@@ -287,16 +287,16 @@ router.put('/auth/profile', authenticateToken, upload.single('image'), updatePro
  *             schema:
  *               type: object
  *               properties:
- *                 message:
+ *                 error:
  *                   type: string
- *                   example: Invalid email
+ *                   example: Email is required
  */
 router.post('/auth/forgot-password', forgotPassword);
 /**
  * @swagger
  * /auth/reset-password:
  *   post:
- *     summary: Reset user password
+ *     summary: Reset user password with code
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -305,12 +305,16 @@ router.post('/auth/forgot-password', forgotPassword);
  *           schema:
  *             type: object
  *             required:
- *               - token
+ *               - email
+ *               - code
  *               - newPassword
  *             properties:
- *               token:
+ *               email:
  *                 type: string
- *                 example: reset-token-123
+ *                 example: johndoe@email.com
+ *               code:
+ *                 type: string
+ *                 example: "52748"
  *               newPassword:
  *                 type: string
  *                 example: newpassword123
@@ -324,7 +328,7 @@ router.post('/auth/forgot-password', forgotPassword);
  *               properties:
  *                 message:
  *                   type: string
- *                   example: Password reset successful
+ *                   example: Password has been reset successfully
  *       400:
  *         description: Bad request
  *         content:
@@ -332,9 +336,9 @@ router.post('/auth/forgot-password', forgotPassword);
  *             schema:
  *               type: object
  *               properties:
- *                 message:
+ *                 error:
  *                   type: string
- *                   example: Invalid or expired token
+ *                   example: Invalid or expired code
  */
 router.post('/auth/reset-password', resetPassword);
 

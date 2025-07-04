@@ -1,3 +1,4 @@
+
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import sql from '../config/db.js';
@@ -5,6 +6,7 @@ import transporter from '../config/mailer.js';
 import cloudinary from '../config/cloudinary.js';
 import uploadImage from '../utils/uploadImage.js';
 import fs from 'fs';
+import redis from '../config/redis.js';
 
 const generateToken = (user) =>
   jwt.sign(
@@ -104,19 +106,22 @@ export const forgotPassword = async (req, res) => {
     const users = await sql`SELECT * FROM users WHERE email = ${email}`;
     const user = users[0];
     if (!user) return res.status(404).json({ error: 'User not found' });
-    const resetToken = jwt.sign(
-      { userId: user.id },
-      process.env.JWT_SECRET,
-      { expiresIn: '15m' }
-    );
-    const resetUrl = `https://localhost:3000/reset-password?token=${resetToken}`;
+
+    // Generate 5-digit code
+    const resetCode = Math.floor(10000 + Math.random() * 90000).toString();
+
+    // Store code in Redis with 10 min expiration
+    await redis.set(`reset:${email}`, resetCode, { ex: 600 });
+
+    // Send code via email
     await transporter.sendMail({
       from: `"FINTECH" <${process.env.EMAIL_USER}>`,
       to: email,
-      subject: 'Password Reset Request',
-      html: `<p>Click below to reset your password:</p><a href="${resetUrl}">${resetUrl}</a><p>Link expires in 15 minutes.</p>`,
+      subject: 'Your Password Reset Code',
+      html: `<p>Your password reset code is: <b>${resetCode}</b></p><p>This code expires in 10 minutes.</p>`,
     });
-    res.json({ message: 'Reset email sent if the account exists.' });
+
+    res.json({ message: 'Reset code sent if the account exists.' });
   } catch (err) {
     console.error('Forgot password error:', err);
     res.status(500).json({ error: err.message });
@@ -124,19 +129,29 @@ export const forgotPassword = async (req, res) => {
 };
 
 export const resetPassword = async (req, res) => {
-  const { token, newPassword } = req.body;
-  if (!token || !newPassword) return res.status(400).json({ error: 'Token and new password required' });
+  const { email, code, newPassword } = req.body;
+  if (!email || !code || !newPassword)
+    return res.status(400).json({ error: 'Email, code, and new password required' });
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.userId;
-    const users = await sql`SELECT * FROM users WHERE id = ${userId}`;
+    // Get code from Redis
+    const storedCode = await redis.get(`reset:${email}`);
+    if (!storedCode || storedCode !== code)
+      return res.status(400).json({ error: 'Invalid or expired code' });
+
+    // Update password
+    const users = await sql`SELECT * FROM users WHERE email = ${email}`;
     const user = users[0];
-    if (!user) return res.status(400).json({ error: 'Invalid token or user not found' });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    await sql`UPDATE users SET password = ${hashedPassword} WHERE id = ${userId}`;
+    await sql`UPDATE users SET password = ${hashedPassword} WHERE email = ${email}`;
+
+    // Delete code from Redis
+    await redis.del(`reset:${email}`);
+
     res.json({ message: 'Password has been reset successfully' });
   } catch (err) {
     console.error('Reset password error:', err);
-    res.status(400).json({ error: 'Invalid or expired token' });
+    res.status(500).json({ error: err.message });
   }
 };
