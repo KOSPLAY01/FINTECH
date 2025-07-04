@@ -111,7 +111,7 @@ export const forgotPassword = async (req, res) => {
     );
     const resetUrl = `https://localhost:3000/reset-password?token=${resetToken}`;
     await transporter.sendMail({
-      from: `"GIFTY CAKES" <${process.env.EMAIL_USER}>`,
+      from: `"FINTECH" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: 'Password Reset Request',
       html: `<p>Click below to reset your password:</p><a href="${resetUrl}">${resetUrl}</a><p>Link expires in 15 minutes.</p>`,
