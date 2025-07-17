@@ -1,23 +1,12 @@
 {
   "version": 2,
   "builds": [
-    {
-      "src": "server.js",
-      "use": "@vercel/node"
-    }
+    { "src": "api/**/*.js", "use": "@vercel/node" },
+    { "src": "server.js", "use": "@vercel/node" }
   ],
   "routes": [
-    {
-      "src": "/payments/webhook",
-      "methods": ["POST"],
-      "headers": {
-        "Content-Type": "application/json"
-      },
-      "dest": "/server.js"
-    },
-    {
-      "src": "/.*",
-      "dest": "/server.js"
-    }
+    { "src": "/webhook/monnify", "dest": "/api/webhook/monnify.js" },
+    { "src": "/webhook/monnify-disbursement", "dest": "/api/webhook/monnify-disbursement.js" },
+    { "src": "/.*", "dest": "/server.js" }
   ]
 }

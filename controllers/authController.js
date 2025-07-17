@@ -7,6 +7,9 @@ import cloudinary from '../config/cloudinary.js';
 import uploadImage from '../utils/uploadImage.js';
 import fs from 'fs';
 import redis from '../config/redis.js';
+import { createReservedAccount } from '../utils/monnifyHelper.js'; 
+
+
 
 const generateToken = (user) =>
   jwt.sign(
@@ -22,7 +25,9 @@ const generateToken = (user) =>
 
 export const register = async (req, res) => {
   const { email, password, name, phoneNumber, role = 'customer' } = req.body;
+  const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
   if (!email || !password || !name) return res.status(400).json({ error: 'All fields are required' });
+  if (!emailRegex.test(email)) return res.status(400).json({ error: 'Invalid email format' });
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -38,10 +43,42 @@ export const register = async (req, res) => {
       RETURNING *
     `;
     const user = insertedUser[0];
+
+    // Check if wallet already exists for this user (should not, but for Monnify safety)
+    const existingWallets = await sql`SELECT * FROM wallets WHERE user_id = ${user.id}`;
+    let monnifyAccount;
+    if (existingWallets.length > 0) {
+      // Use existing wallet info
+      monnifyAccount = {
+        accountNumber: existingWallets[0].monnify_account_number,
+        bankName: existingWallets[0].monnify_bank_name
+      };
+    } else {
+      // Create Monnify Reserved Account
+      monnifyAccount = await createReservedAccount(user);
+      // Save wallet with account info
+      await sql`
+        INSERT INTO wallets (
+          user_id, balance, tier, monnify_account_reference, monnify_account_number, monnify_bank_name
+        )
+        VALUES (
+          ${user.id}, 0, 'TIER_1', ${`wallet_${user.id}`}, ${monnifyAccount.accountNumber}, ${monnifyAccount.bankName}
+        )
+      `;
+    }
+
     res.status(201).json({
       message: 'User registered successfully',
       token: generateToken(user),
       user,
+      wallet: {
+        id: user.id,
+        balance: 0,
+        tier: 'TIER_1',
+        monnifyAccountReference: `wallet_${user.id}`,
+        monnifyAccountNumber: monnifyAccount.accountNumber,
+        monnifyBankName: monnifyAccount.bankName,
+      },
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -65,10 +102,20 @@ export const login = async (req, res) => {
 
 export const getProfile = async (req, res) => {
   try {
+    // Get user info
     const users = await sql`SELECT * FROM users WHERE id = ${req.user.id}`;
     const user = users[0];
     if (!user) return res.status(404).json({ error: 'User not found' });
-    res.json(user);
+
+    // Get wallet info
+    const wallets = await sql`SELECT monnify_account_number, tier FROM wallets WHERE user_id = ${req.user.id}`;
+    const wallet = wallets[0];
+
+    res.json({
+      ...user,
+      monnifyAccountNumber: wallet?.monnify_account_number || null,
+      tier: wallet?.tier || null,
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

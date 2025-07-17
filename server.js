@@ -4,21 +4,50 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import authRoutes from './routes/auth.js';
+import walletRoutes from './routes/wallet.js';
+import kycRoutes from './routes/kyc.js';
+import adminRoutes from './routes/admin.js';
 
-import { swaggerUi, swaggerSpec } from './config/swagger.js';
+import {
+  handleMonnifyWebhook,
+  handleMonnifyDisbursementWebhook
+} from './controllers/walletController.js';
+
+import { swaggerSpec } from './config/swagger.js';
 
 const app = express();
-app.use((req, res, next) => {
-  if (req.originalUrl === '/payments/webhook') {
-    express.raw({ type: 'application/json' })(req, res, next);
-  } else {
-    express.json()(req, res, next);
-  }
-});
-app.use(express.urlencoded({ extended: true }));
-app.use(cors());
 
-// Swagger API docs route
+// === Webhooks ===
+
+// Handle Monnify Reserved Account Funding Webhook
+app.post('/webhook/monnify', express.raw({ type: 'application/json' }), (req, res, next) => {
+  try {
+    req.body = JSON.parse(req.body.toString('utf8'));
+    next();
+  } catch (err) {
+    console.error('Invalid JSON in /webhook/monnify:', err);
+    res.status(400).json({ error: 'Invalid JSON' });
+  }
+}, handleMonnifyWebhook);
+
+// Handle Monnify Disbursement (Bank Transfer) Webhook
+app.post('/webhook/monnify-disbursement', express.raw({ type: 'application/json' }), (req, res, next) => {
+  try {
+    req.body = JSON.parse(req.body.toString('utf8'));
+    next();
+  } catch (err) {
+    console.error('Invalid JSON in /webhook/monnify-disbursement:', err);
+    res.status(400).json({ error: 'Invalid JSON' });
+  }
+}, handleMonnifyDisbursementWebhook);
+
+
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+
+// === Swagger Docs ===
 app.get('/docs', (req, res) => {
   res.send(`
     <!DOCTYPE html>
@@ -44,7 +73,7 @@ app.get('/docs', (req, res) => {
       </body>
     </html>
   `);
-});;
+});
 
 app.get('/swagger.json', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
@@ -52,14 +81,24 @@ app.get('/swagger.json', (req, res) => {
   res.send(swaggerSpec);
 });
 
-const PORT = process.env.PORT || 3000;
-
+// === Welcome Route ===
 app.get('/', (req, res) => {
-  res.send('WELCOME TO FINTECH API');
+  res.send('WELCOME TO FINFLOW API');
 });
 
+// === API Routes ===
 app.use('/', authRoutes);
+app.use('/api/wallet', walletRoutes);
+app.use('/api/kyc', kycRoutes);
+app.use('/api/admin', adminRoutes);
 
+// === Global 404 Handler ===
+app.use((req, res) => {
+  res.status(404).json({ error: 'Not found' });
+});
+
+// === Server Init ===
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

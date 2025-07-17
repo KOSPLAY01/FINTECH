@@ -1,0 +1,293 @@
+{
+  "info": {
+    "name": "Finflow API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "name", "value": "John Doe", "type": "text" },
+                { "key": "email", "value": "johndoe@email.com", "type": "text" },
+                { "key": "password", "value": "password123", "type": "text" },
+                { "key": "phoneNumber", "value": "08012345678", "type": "text" },
+                { "key": "image", "type": "file" }
+              ]
+            },
+            "url": { "raw": "{{baseUrl}}/register", "host": ["{{baseUrl}}"], "path": ["register"] }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"johndoe@email.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/auth/profile", "host": ["{{baseUrl}}"], "path": ["auth", "profile"] }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "name", "value": "John Doe", "type": "text" },
+                { "key": "email", "value": "johndoe@email.com", "type": "text" },
+                { "key": "phoneNumber", "value": "08012345678", "type": "text" },
+                { "key": "image", "type": "file" }
+              ]
+            },
+            "url": { "raw": "{{baseUrl}}/auth/profile", "host": ["{{baseUrl}}"], "path": ["auth", "profile"] }
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"johndoe@email.com\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/forgot-password", "host": ["{{baseUrl}}"], "path": ["auth", "forgot-password"] }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"johndoe@email.com\",\n  \"code\": \"52748\",\n  \"newPassword\": \"newpassword123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/reset-password", "host": ["{{baseUrl}}"], "path": ["auth", "reset-password"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Wallet",
+      "item": [
+        {
+          "name": "Get Wallet",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/wallet/", "host": ["{{baseUrl}}"], "path": ["api", "wallet"] }
+          }
+        },
+        {
+          "name": "Transfer to User",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountNumber\": \"1234567890\",\n  \"bank\": \"Wema Bank\",\n  \"amount\": 1000\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/wallet/transfer", "host": ["{{baseUrl}}"], "path": ["api", "wallet", "transfer"] }
+          }
+        },
+        {
+          "name": "Transfer to Bank",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountNumber\": \"1234567890\",\n  \"bankName\": \"Wema Bank\",\n  \"amount\": 1000,\n  \"narration\": \"Payment for service\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/wallet/bank-transfer", "host": ["{{baseUrl}}"], "path": ["api", "wallet", "bank-transfer"] }
+          }
+        },
+        {
+          "name": "Fund Account",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1000\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/wallet/fund", "host": ["{{baseUrl}}"], "path": ["api", "wallet", "fund"] }
+          }
+        },
+        {
+          "name": "Get Transactions",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/wallet/transactions", "host": ["{{baseUrl}}"], "path": ["api", "wallet", "transactions"] }
+          }
+        },
+        {
+          "name": "Authorize Bank Transfer with OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reference\": \"bank_transfer_10_1752750730868\",\n  \"otp\": \"772438\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/wallet/bank/authorize",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wallet", "bank", "authorize"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "KYC",
+      "item": [
+        {
+          "name": "Submit KYC",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "fullName", "value": "John Doe", "type": "text" },
+                { "key": "bvn", "value": "12345678901", "type": "text" },
+                { "key": "nin", "value": "12345678901", "type": "text" },
+                { "key": "idType", "value": "NIN", "type": "text" },
+                { "key": "idNumber", "value": "A1234567", "type": "text" },
+                { "key": "tierRequested", "value": "tier_2", "type": "text" },
+                { "key": "idImage", "type": "file" },
+                { "key": "utilityBill", "type": "file" }
+              ]
+            },
+            "url": { "raw": "{{baseUrl}}/api/kyc/submit", "host": ["{{baseUrl}}"], "path": ["api", "kyc", "submit"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Webhooks",
+      "item": [
+        {
+          "name": "Monnify Webhook",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventData\": {\n    \"paymentReference\": \"wallet_topup_1_1721122334455\",\n    \"amountPaid\": 1000,\n    \"paymentStatus\": \"PAID\"\n  }\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/webhook/monnify", "host": ["{{baseUrl}}"], "path": ["webhook", "monnify"] }
+          }
+        },
+        {
+          "name": "Monnify Disbursement Webhook",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventData\": {\n    \"transactionReference\": \"bank_transfer_1_1721122334455\",\n    \"amount\": 1000,\n    \"paymentStatus\": \"SUCCESSFUL\"\n  }\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/webhook/monnify-disbursement", "host": ["{{baseUrl}}"], "path": ["webhook", "monnify-disbursement"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/admin/users", "host": ["{{baseUrl}}"], "path": ["api", "admin", "users"] }
+          }
+        },
+        {
+          "name": "Get User Transactions",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/admin/users/:userId/transactions", "host": ["{{baseUrl}}"], "path": ["api", "admin", "users", ":userId", "transactions"] }
+          }
+        },
+        {
+          "name": "Get Pending KYC",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/admin/kyc/pending", "host": ["{{baseUrl}}"], "path": ["api", "admin", "kyc", "pending"] }
+          }
+        },
+        {
+          "name": "Approve KYC",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/admin/kyc/approve/:kycId", "host": ["{{baseUrl}}"], "path": ["api", "admin", "kyc", "approve", ":kycId"] }
+          }
+        },
+        {
+          "name": "Reject KYC",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/admin/kyc/reject/:kycId", "host": ["{{baseUrl}}"], "path": ["api", "admin", "kyc", "reject", ":kycId"] }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "token", "value": "" },
+    { "key": "adminToken", "value": "" }
+  ]
+}
