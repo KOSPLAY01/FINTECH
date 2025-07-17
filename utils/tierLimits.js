@@ -1,6 +1,7 @@
 
 export const getTierLimits = (tier) => {
-  switch (tier) {
+  const normalizedTier = tier ? tier.toUpperCase() : '';
+  switch (normalizedTier) {
     case 'TIER_1':
       return { dailyLimit: 50000, maxBalance: 300000 };
     case 'TIER_2':

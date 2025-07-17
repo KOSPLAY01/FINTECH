@@ -15,7 +15,7 @@ let monnifyTokenExpiry = null;
 export const getMonnifyToken = async () => {
   if (monnifyToken && monnifyTokenExpiry > Date.now()) return monnifyToken;
 
-  const res = await fetch(`${process.env.process.env.MONNIFY_BASE_URL}/api/v1/auth/login`, {
+  const res = await fetch(`${process.env.MONNIFY_BASE_URL}/api/v1/auth/login`, {
     method: 'POST',
     headers: {
       Authorization: 'Basic ' + Buffer.from(`${API_KEY}:${CLIENT_SECRET}`).toString('base64'),
