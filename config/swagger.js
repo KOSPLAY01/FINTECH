@@ -11,7 +11,7 @@ const options = {
     },
     servers: [
       {
-        url: 'https://fintech-dun.vercel.app',
+        url: 'https://finflow-blond.vercel.app',
       },
       {
         url: 'http://localhost:3000',
