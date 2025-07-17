@@ -1,10 +1,15 @@
-const uploadImage = async (file, cloudinary, fs) => {
+const uploadImage = async (file, cloudinary) => {
   if (!file) return null;
-  const result = await cloudinary.uploader.upload(file.path, {
-    folder: 'FINTECH_API',
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: 'FINTECH_API' },
+      (error, result) => {
+        if (result) resolve(result.secure_url);
+        else reject(error);
+      }
+    );
+    stream.end(file.buffer);  // send buffer directly
   });
-  fs.unlinkSync(file.path);
-  return result.secure_url;
 };
 
 export default uploadImage;

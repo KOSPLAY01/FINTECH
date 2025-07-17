@@ -1,19 +1,11 @@
-
-// routes/kyc.js
 import express from 'express';
 import auth from '../middleware/auth.js';
 import multer from 'multer';
+const upload = multer({ storage: multer.memoryStorage() });
+
 import { submitKYC } from '../controllers/kycController.js';
 
-
-/**
- * @swagger
- * tags:
- *   name: KYC
- *   description: Know Your Customer (KYC) submission and verification
- */
 const router = express.Router();
-const upload = multer({ dest: 'uploads/' });
 
 /**
  * @swagger
@@ -33,10 +25,7 @@ const upload = multer({ dest: 'uploads/' });
  *               - fullName
  *               - bvn
  *               - nin
- *               - idType
- *               - idNumber
  *               - tierRequested
- *               - idImage
  *             properties:
  *               fullName:
  *                 type: string
@@ -47,15 +36,16 @@ const upload = multer({ dest: 'uploads/' });
  *               nin:
  *                 type: string
  *                 example: "12345678901"
+ *               tierRequested:
+ *                 type: string
+ *                 enum: [tier_2, tier_3]
+ *                 example: tier_2
  *               idType:
  *                 type: string
- *                 example: NIN
+ *                 example: National ID
  *               idNumber:
  *                 type: string
  *                 example: A1234567
- *               tierRequested:
- *                 type: string
- *                 example: tier_2
  *               idImage:
  *                 type: string
  *                 format: binary
@@ -63,28 +53,19 @@ const upload = multer({ dest: 'uploads/' });
  *                 type: string
  *                 format: binary
  *     responses:
- *       200:
+ *       201:
  *         description: KYC submitted successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: KYC submitted
  *       400:
  *         description: Bad request
  *       401:
  *         description: Unauthorized
  */
-
 router.post(
   '/submit',
   auth,
   upload.fields([
     { name: 'idImage', maxCount: 1 },
-    { name: 'utilityBill', maxCount: 1 } // Optional unless Tier 3
+    { name: 'utilityBill', maxCount: 1 }
   ]),
   submitKYC
 );
