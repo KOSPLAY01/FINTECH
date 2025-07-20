@@ -11,11 +11,7 @@ import auth from '../middleware/auth.js';
 
 const router = express.Router();
 
-/**
- * @swagger
- * tags:
- *   name: Wallet
- *   description: Wallet management and transactions
+
 /**
  * @swagger
  * tags:
@@ -259,6 +255,10 @@ const router = express.Router();
  */
 router.post('/bank/authorize', authorizeBankTransfer);
 router.post('/bank-transfer', auth, transferToBank);
+router.get('/', auth, getWallet);
+router.post('/fund', auth, fundAccount);
+router.get('/transactions', auth, getTransactions);
+router.post('/transfer', auth, transferToUser);
 
 
 
